@@ -25,7 +25,7 @@
       agi: $('agi'), prestigeBtn: $('prestige-btn'), prestigeGain: $('prestige-gain'), agiNote: $('agi-note'),
       agiExplain: $('agi-explain'), perks: $('perks'),
       achievements: $('achievements'), achSummary: $('ach-summary'),
-      stats: $('stats'), toasts: $('toasts'), lang: $('lang-toggle'),
+      stats: $('stats'), toasts: $('toasts'), lang: $('lang-toggle'), theme: $('theme-select'),
     };
   }
 
@@ -33,6 +33,10 @@
     document.documentElement.lang = I.lang === 'pt' ? 'pt-BR' : 'en';
     for (const node of document.querySelectorAll('[data-i18n]')) node.textContent = t(node.dataset.i18n);
     el.lang.textContent = I.lang === 'pt' ? 'EN' : 'PT';
+    el.theme.setAttribute('aria-label', t('ui.theme'));
+    el.theme.title = t('ui.theme');
+    el.theme.innerHTML = C.themes.map((id) => `<option value="${id}">${t(`theme.${id}`)}</option>`).join('');
+    el.theme.value = document.documentElement.dataset.theme || C.themes[0];
     el.agiExplain.textContent = t('agi.explain', { pct: Math.round(C.prestige.bonusPerPoint * 100) });
     for (const k in sigs) delete sigs[k]; // força reconstrução das listas no próximo update
   }

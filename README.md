@@ -15,6 +15,7 @@ Para publicar, sirva a pasta como site estático (ex.: GitHub Pages → *Deploy 
 
 | Arquivo | O que faz |
 |---|---|
+| `css/themes.css` | Paletas dos 11 temas (o Windows 98 também muda bordas e barras de título) |
 | `js/config.js` | **Todo o balanceamento**: custos, multiplicadores, modelos, geradores, upgrades |
 | `js/i18n.js` | Todos os textos em PT/EN, incluindo o que o "modelo" digita ao clicar |
 | `js/core.js` | Regras do jogo (produção, compras, prestígio, conquistas, tokens dourados), sem DOM |
@@ -70,10 +71,17 @@ node tools/balance-sim.js 4 3   # bot clicando 4×/s, 3 runs
 
 Um jogador real deve levar umas 3–4 h na primeira run.
 
+## Criando um tema
+
+Copie um bloco `:root[data-theme="..."]` em `css/themes.css`, troque as cores, adicione o id em
+`themes` no `config.js` e o nome `theme.<id>` nas duas línguas em `i18n.js`.
+
 ## Controles
 
 - Clique no botão **GERAR TOKENS** ou aperte **espaço** (segurar a tecla não conta).
 - `x1 / x10 / max` define quantos geradores ou rivais comprar por clique.
 - Clique no `<|golden|>` quando ele aparecer na tela.
 - Limite de 12 cliques/s: acima disso os cliques não contam (anti-autoclicker, ajustável em `maxClicksPerSecond`).
+- O seletor no topo troca o tema: Terminal, Escuro, Claro, Catppuccin Mocha, Dracula, GitHub Dark,
+  Tokyo Night, Nord, Gruvbox, Âmbar CRT e Windows 98. A escolha fica salva no navegador e não é apagada pelo reset.
 - `EN/PT` troca o idioma. `resetar` apaga o save inteiro, inclusive os pontos de AGI.

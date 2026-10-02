@@ -3,6 +3,8 @@
 (function (AIC) {
   AIC.config = {
     tickMs: 100,
+    // Ids dos temas em css/themes.css (o primeiro é o padrão). Nomes em i18n.js: theme.<id>.
+    themes: ['terminal', 'dark', 'light', 'catppuccin', 'dracula', 'github-dark', 'tokyo-night', 'nord', 'gruvbox', 'amber', 'win98'],
     saveEveryMs: 10000,
     offlineCapHours: 8,
     costGrowth: 1.15, // custo do gerador = base × 1.15^quantidade

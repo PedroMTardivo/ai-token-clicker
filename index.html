@@ -7,12 +7,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/themes.css">
   <link rel="stylesheet" href="css/style.css">
+  <script>
+    // Aplica o tema antes de renderizar para não piscar o tema padrão.
+    try { document.documentElement.dataset.theme = localStorage.getItem('ai-token-clicker.theme') || ''; } catch {}
+  </script>
 </head>
 <body>
   <header class="topbar">
     <div class="brand">&gt; ai_token_clicker<span class="cursor">_</span></div>
     <div class="top-actions">
+      <select id="theme-select" class="chip"></select>
       <button id="lang-toggle" class="chip" title="PT / EN">EN</button>
       <button id="reset-btn" class="chip danger" data-i18n="ui.reset"></button>
     </div>

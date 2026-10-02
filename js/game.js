@@ -153,6 +153,13 @@
       UI.update(state);
     });
 
+    el.theme.addEventListener('change', () => {
+      const theme = el.theme.value === C.themes[0] ? '' : el.theme.value;
+      document.documentElement.dataset.theme = theme;
+      try { localStorage.setItem('ai-token-clicker.theme', theme); } catch { /* storage indisponível */ }
+      el.theme.blur(); // senão o espaço reabre o seletor em vez de clicar
+    });
+
     el.lang.addEventListener('click', () => {
       state.lang = I.lang = I.lang === 'pt' ? 'en' : 'pt';
       UI.applyStaticTexts();

@@ -1,0 +1,256 @@
+/* Temas. Cada um só redefine as variáveis de cor; o layout fica em style.css.
+   --accent: cor principal · --accent2: destaque (custos, tokens dourados) · --term: fundo do terminal
+   --glow-a: intensidade do brilho neon (0% desliga) · --scan: opacidade das scanlines (0 desliga)
+   O tema fica em <html data-theme="...">; sem atributo vale o Terminal. */
+
+:root {
+  color-scheme: dark;
+  --bg: #070a08;
+  --panel: #0c120e;
+  --term: #040605;
+  --line: #1d2b21;
+  --fg: #c8f7d4;
+  --muted: #6b8a74;
+  --accent: #39ff7a;
+  --accent-dim: #1f8f47;
+  --accent2: #ffb547;
+  --red: #ff5f56;
+  --glow-a: 45%;
+  --scan: 0.18;
+  --glow: 0 0 8px color-mix(in srgb, var(--accent) var(--glow-a), transparent);
+}
+
+:root[data-theme="dark"] {
+  --bg: #121417;
+  --panel: #1a1d21;
+  --term: #0e1013;
+  --line: #2a2f36;
+  --fg: #e6e8eb;
+  --muted: #8a929c;
+  --accent: #5aa2ff;
+  --accent-dim: #2f5f99;
+  --accent2: #f5b84a;
+  --red: #f26d6d;
+  --glow-a: 20%;
+  --scan: 0;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f7f9;
+  --panel: #ffffff;
+  --term: #eef1f4;
+  --line: #d9dee4;
+  --fg: #1d232a;
+  --muted: #687280;
+  --accent: #13803f;
+  --accent-dim: #8cc7a3;
+  --accent2: #b45309;
+  --red: #c62828;
+  --glow-a: 0%;
+  --scan: 0;
+}
+
+/* Catppuccin Mocha */
+:root[data-theme="catppuccin"] {
+  --bg: #1e1e2e;
+  --panel: #181825;
+  --term: #11111b;
+  --line: #313244;
+  --fg: #cdd6f4;
+  --muted: #7f849c;
+  --accent: #cba6f7;
+  --accent-dim: #7f6b9e;
+  --accent2: #fab387;
+  --red: #f38ba8;
+  --glow-a: 25%;
+  --scan: 0;
+}
+
+:root[data-theme="dracula"] {
+  --bg: #282a36;
+  --panel: #21222c;
+  --term: #191a21;
+  --line: #44475a;
+  --fg: #f8f8f2;
+  --muted: #6272a4;
+  --accent: #bd93f9;
+  --accent-dim: #7b62a8;
+  --accent2: #ffb86c;
+  --red: #ff5555;
+  --glow-a: 30%;
+  --scan: 0;
+}
+
+:root[data-theme="github-dark"] {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --term: #010409;
+  --line: #30363d;
+  --fg: #e6edf3;
+  --muted: #7d8590;
+  --accent: #3fb950;
+  --accent-dim: #238636;
+  --accent2: #d29922;
+  --red: #f85149;
+  --glow-a: 15%;
+  --scan: 0;
+}
+
+:root[data-theme="tokyo-night"] {
+  --bg: #1a1b26;
+  --panel: #16161e;
+  --term: #13131a;
+  --line: #292e42;
+  --fg: #c0caf5;
+  --muted: #565f89;
+  --accent: #7aa2f7;
+  --accent-dim: #3d59a1;
+  --accent2: #e0af68;
+  --red: #f7768e;
+  --glow-a: 30%;
+  --scan: 0;
+}
+
+:root[data-theme="nord"] {
+  --bg: #2e3440;
+  --panel: #3b4252;
+  --term: #272c36;
+  --line: #4c566a;
+  --fg: #eceff4;
+  --muted: #8f99ab;
+  --accent: #88c0d0;
+  --accent-dim: #5e81ac;
+  --accent2: #ebcb8b;
+  --red: #bf616a;
+  --glow-a: 15%;
+  --scan: 0;
+}
+
+/* Gruvbox Dark */
+:root[data-theme="gruvbox"] {
+  --bg: #282828;
+  --panel: #32302f;
+  --term: #1d2021;
+  --line: #504945;
+  --fg: #ebdbb2;
+  --muted: #928374;
+  --accent: #b8bb26;
+  --accent-dim: #79740e;
+  --accent2: #fabd2f;
+  --red: #fb4934;
+  --glow-a: 20%;
+  --scan: 0.08;
+}
+
+/* Monitor de fósforo âmbar dos anos 80 */
+:root[data-theme="amber"] {
+  --bg: #0c0800;
+  --panel: #140d02;
+  --term: #070500;
+  --line: #2e2008;
+  --fg: #ffd9a0;
+  --muted: #9a7440;
+  --accent: #ffb000;
+  --accent-dim: #8f6200;
+  --accent2: #fff0b8;
+  --red: #ff5f3a;
+  --glow-a: 55%;
+  --scan: 0.22;
+}
+
+/* Windows 98: além das cores, muda a forma (relevo, barras de título, cantos retos).
+   As regras estruturais ficam aqui para o tema ser autocontido. */
+:root[data-theme="win98"] {
+  color-scheme: light;
+  --font: Tahoma, 'MS Sans Serif', 'Microsoft Sans Serif', Verdana, sans-serif;
+  --bg: #c0c0c0;
+  --panel: #c0c0c0;
+  --term: #ffffff;
+  --line: #808080;
+  --fg: #000000;
+  --muted: #404040;
+  --accent: #000080;
+  --accent-dim: #808080;
+  --accent2: #800000;
+  --red: #c00000;
+  --glow-a: 0%;
+  --scan: 0;
+  --raised: inset -1px -1px #0a0a0a, inset 1px 1px #ffffff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+  --sunken: inset -1px -1px #ffffff, inset 1px 1px #808080, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+  --titlebar: linear-gradient(90deg, #000080, #1084d0);
+}
+
+[data-theme="win98"] body { background: #008080; }
+[data-theme="win98"] body::after { display: none; }
+[data-theme="win98"] * { border-radius: 0 !important; text-shadow: none !important; }
+[data-theme="win98"] h2 { color: var(--accent); }
+[data-theme="win98"] h2::before { content: ''; }
+[data-theme="win98"] .section-head { border-bottom: 1px solid #808080; box-shadow: 0 1px 0 #fff; }
+
+/* barra do topo e painéis como janelas */
+[data-theme="win98"] .topbar { padding: 4px 8px; border-bottom: 0; background: var(--titlebar); }
+[data-theme="win98"] .brand { color: #fff; }
+[data-theme="win98"] .panel { padding: 3px 10px 12px; background: var(--panel); box-shadow: var(--raised); }
+[data-theme="win98"] .panel::before {
+  content: 'token_clicker.exe';
+  display: block;
+  margin: 0 -7px;
+  padding: 3px 6px;
+  background: var(--titlebar);
+  color: #fff;
+  font-weight: bold;
+  font-size: 12px;
+}
+[data-theme="win98"] .panel-shop::before { content: 'control_panel.exe'; }
+
+/* botões em relevo, afundam ao clicar */
+[data-theme="win98"] .chip,
+[data-theme="win98"] .seg button,
+[data-theme="win98"] .tabs button,
+[data-theme="win98"] .model-btn,
+[data-theme="win98"] .prompt-btn,
+[data-theme="win98"] .item {
+  border: 0;
+  background: var(--panel);
+  color: #000;
+  box-shadow: var(--raised);
+}
+[data-theme="win98"] .item:hover:not(.poor):not(.locked),
+[data-theme="win98"] .model-btn:hover:not(.poor):not(:disabled) { background: #d4d0c8; }
+[data-theme="win98"] button:active:not(:disabled) { box-shadow: var(--sunken); }
+[data-theme="win98"] .chip:hover { color: #000; }
+[data-theme="win98"] .chip.danger:hover { color: var(--red); }
+[data-theme="win98"] select.chip { background: #fff; box-shadow: var(--sunken); }
+[data-theme="win98"] .seg { gap: 2px; border: 0; }
+[data-theme="win98"] .seg button.active { background: #dfdfdf; color: #000; box-shadow: var(--sunken); }
+[data-theme="win98"] .model-btn.poor,
+[data-theme="win98"] .model-btn:disabled { color: #808080; }
+[data-theme="win98"] .prompt-btn:hover { background: #d4d0c8; }
+[data-theme="win98"] .prompt-btn:active { transform: none; }
+[data-theme="win98"] .prompt-main { color: #000; }
+
+[data-theme="win98"] .tabs { gap: 2px; border-bottom: 0; }
+[data-theme="win98"] .tabs button { margin-bottom: 0; color: #000; }
+[data-theme="win98"] .tabs button.active { font-weight: bold; background: #dfdfdf; box-shadow: var(--sunken); }
+
+/* caixas de grupo, terminal e barra de progresso */
+[data-theme="win98"] .model-box,
+[data-theme="win98"] .agi-box { border: 1px solid #808080; box-shadow: 1px 1px 0 #fff, inset 1px 1px 0 #fff; }
+[data-theme="win98"] .terminal { border: 0; box-shadow: var(--sunken); }
+[data-theme="win98"] .terminal-title { color: #fff; background: var(--titlebar); border-bottom: 0; }
+[data-theme="win98"] .bar { height: 14px; padding: 2px; background: #fff; box-shadow: var(--sunken); }
+[data-theme="win98"] .bar > span { background: repeating-linear-gradient(90deg, #000080 0 8px, transparent 8px 10px); box-shadow: none; }
+
+[data-theme="win98"] .item.locked { border: 1px dashed #808080; background: transparent; box-shadow: none; }
+[data-theme="win98"] .item.owned { background: #dfdfdf; }
+[data-theme="win98"] .ach { border-color: #808080; }
+[data-theme="win98"] .ach.done { border: 1px solid #808080; background: #fff; }
+
+/* toasts como caixas de diálogo, token dourado e buffs como tooltip amarelo */
+[data-theme="win98"] .toast { border: 0; background: var(--panel); color: #000; box-shadow: var(--raised), 2px 2px 0 rgba(0, 0, 0, 0.35); }
+[data-theme="win98"] .toast.bad { color: var(--red); }
+[data-theme="win98"] .golden,
+[data-theme="win98"] .buff { border: 1px solid #000; background: #ffffe1; color: #000; }
+[data-theme="win98"] .golden { box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35); }
+[data-theme="win98"] .golden:hover { background: #ffffc0; }

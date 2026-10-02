@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Token Clicker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">&gt; ai_token_clicker<span class="cursor">_</span></div>
+    <div class="top-actions">
+      <button id="lang-toggle" class="chip" title="PT / EN">EN</button>
+      <button id="reset-btn" class="chip danger" data-i18n="ui.reset"></button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel panel-main">
+      <div class="counter">
+        <div id="tokens" class="tokens">0</div>
+        <div class="label" data-i18n="ui.tokens"></div>
+        <div class="rates">
+          <span><b id="tps">0</b> <span data-i18n="ui.perSecond"></span></span>
+          <span class="sep">·</span>
+          <span><b id="per-click">1</b> <span data-i18n="ui.perClick"></span></span>
+        </div>
+        <div id="buffs" class="buffs"></div>
+      </div>
+
+      <div class="model-box">
+        <div class="muted small" data-i18n="ui.currentModel"></div>
+        <div id="model-name" class="model-name">GPT-1</div>
+        <div id="model-desc" class="muted small"></div>
+        <button id="model-next" class="model-btn">
+          <span><span class="ps">$</span> <span id="model-cmd"></span></span>
+          <span id="model-cost" class="model-cost"></span>
+          <span class="bar"><span id="model-bar"></span></span>
+        </button>
+      </div>
+
+      <button id="prompt-btn" class="prompt-btn">
+        <span class="prompt-main" data-i18n="ui.prompt"></span>
+        <span class="prompt-hint" data-i18n="ui.promptHint"></span>
+      </button>
+
+      <div class="terminal">
+        <div class="terminal-title" data-i18n="ui.output"></div>
+        <div id="output" class="output"></div>
+      </div>
+    </section>
+
+    <section class="panel panel-shop">
+      <nav id="tabs" class="tabs">
+        <button data-tab="shop"><span data-i18n="tab.shop"></span></button>
+        <button data-tab="labs"><span data-i18n="tab.labs"></span></button>
+        <button data-tab="agi"><span data-i18n="tab.agi"></span></button>
+        <button data-tab="achievements"><span data-i18n="tab.achievements"></span></button>
+        <button data-tab="stats"><span data-i18n="tab.stats"></span></button>
+      </nav>
+
+      <div class="tab-panel" data-panel="shop">
+        <div class="section-head">
+          <h2 data-i18n="ui.upgrades"></h2>
+          <span id="installed" class="muted small"></span>
+        </div>
+        <div id="upgrades" class="list"></div>
+
+        <div class="section-head">
+          <h2 data-i18n="ui.generators"></h2>
+          <div class="seg buy-amount">
+            <button data-amount="1">x1</button>
+            <button data-amount="10">x10</button>
+            <button data-amount="max">max</button>
+          </div>
+        </div>
+        <div id="generators" class="list"></div>
+      </div>
+
+      <div class="tab-panel" data-panel="labs" hidden>
+        <div class="section-head">
+          <h2 data-i18n="labs.title"></h2>
+          <div class="seg buy-amount">
+            <button data-amount="1">x1</button>
+            <button data-amount="10">x10</button>
+            <button data-amount="max">max</button>
+          </div>
+        </div>
+        <p class="empty" data-i18n="labs.hint"></p>
+        <div id="rivals" class="list"></div>
+      </div>
+
+      <div class="tab-panel" data-panel="agi" hidden>
+        <div class="section-head">
+          <h2 data-i18n="agi.title"></h2>
+        </div>
+        <div id="agi" class="stats agi-box"></div>
+        <button id="prestige-btn" class="model-btn prestige-btn">
+          <span><span class="ps">#</span> <span data-i18n="agi.btn"></span></span>
+          <span id="prestige-gain" class="model-cost"></span>
+        </button>
+        <p id="agi-note" class="empty"></p>
+        <p id="agi-explain" class="muted small"></p>
+        <div class="section-head">
+          <h2 data-i18n="agi.perks"></h2>
+        </div>
+        <div id="perks" class="list"></div>
+      </div>
+
+      <div class="tab-panel" data-panel="achievements" hidden>
+        <div class="section-head">
+          <h2 data-i18n="ach.title"></h2>
+          <span id="ach-summary" class="muted small"></span>
+        </div>
+        <div id="achievements" class="ach-grid"></div>
+      </div>
+
+      <div class="tab-panel" data-panel="stats" hidden>
+        <div class="section-head">
+          <h2 data-i18n="ui.stats"></h2>
+        </div>
+        <div id="stats" class="stats"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toasts" class="toasts"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/save.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

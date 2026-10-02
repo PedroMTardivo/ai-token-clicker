@@ -85,6 +85,10 @@
     ],
     autoClicksPerSecond: 2,
 
+    // Anti-autoclicker: cliques acima disso dentro de 1 s são ignorados ("HTTP 429").
+    maxClicksPerSecond: 12,
+    rateLimitWarnCooldown: 10, // segundos entre avisos
+
     // Tokens dourados: aparecem a cada [minDelay, maxDelay] segundos e somem após `lifetime`.
     golden: {
       firstDelay: 60,
@@ -128,6 +132,7 @@
       { id: 'golden_25', type: 'golden', n: 25 },
       { id: 'agi_1', type: 'prestige', n: 1 },
       { id: 'agi_5', type: 'prestige', n: 5 },
+      { id: 'rate_limited', type: 'rateLimited', n: 1 },
     ],
   };
 })(globalThis.AIC = globalThis.AIC || {});

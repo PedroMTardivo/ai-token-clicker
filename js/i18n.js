@@ -207,6 +207,12 @@
       'stats.achievements': 'conquistas',
       'stats.golden': 'tokens dourados clicados',
       'stats.runTime': 'tempo nesta run',
+      'stats.rateLimited': 'cliques barrados (429)',
+
+      // Variações separadas por | ; uma é sorteada a cada aviso.
+      'rate.msgs': 'HTTP 429 Too Many Requests. Mais de {max} cliques/s? Isso é coisa de bot. Os cliques extras foram pro /dev/null.|Autoclicker detectado. A ironia: um bot gerando tokens pra uma IA. Só {max} cliques/s contam.|Rate limit atingido. Até a OpenAI te bloquearia agora. Máximo: {max} cliques/s.|Seu dedo está acima do tier gratuito. Faça upgrade para o plano Pro (não existe). Limite: {max}/s.|Calma, humano. Se é que você é um. Cliques acima de {max}/s não contam.',
+      'ach.rate_limited.name': '429 Too Many Requests',
+      'achd.rateLimited': 'Seja pego pelo rate limit.',
     },
 
     en: {
@@ -415,6 +421,11 @@
       'stats.achievements': 'achievements',
       'stats.golden': 'golden tokens clicked',
       'stats.runTime': 'time this run',
+      'stats.rateLimited': 'clicks blocked (429)',
+
+      'rate.msgs': 'HTTP 429 Too Many Requests. Over {max} clicks/s? That is bot behavior. Extra clicks went to /dev/null.|Autoclicker detected. The irony: a bot generating tokens for an AI. Only {max} clicks/s count.|Rate limit hit. Even OpenAI would block you right now. Max: {max} clicks/s.|Your finger is above the free tier. Upgrade to Pro (it does not exist). Limit: {max}/s.|Easy there, human. If you are one. Clicks above {max}/s do not count.',
+      'ach.rate_limited.name': '429 Too Many Requests',
+      'achd.rateLimited': 'Get caught by the rate limit.',
     },
   };
 

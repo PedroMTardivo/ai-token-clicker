@@ -17,6 +17,7 @@
       totalTokens: 0, // tokens de todas as runs
       clicks: 0,
       clickTokens: 0,
+      rateLimited: 0, // cliques barrados pelo limite de cliques/s
       tier: 0,
       gens: {},
       upgrades: {},
@@ -242,6 +243,7 @@
       case 'upgrades': return Object.keys(s.upgrades).length >= a.n;
       case 'golden': return s.goldenClicks >= a.n;
       case 'prestige': return s.prestiges >= a.n;
+      case 'rateLimited': return s.rateLimited >= a.n;
       default: return false;
     }
   }

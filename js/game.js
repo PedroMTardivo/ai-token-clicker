@@ -13,7 +13,33 @@
     UI.toast(I.t('ui.offline', { time: U.fmtTime(away), n: U.fmt(gain) }), 7000);
   }
 
+  // Janela deslizante de 1 s: o clique além do limite é barrado e não gera nada.
+  const recentClicks = [];
+  let lastRateWarn = -Infinity;
+
+  function rateLimited(now) {
+    while (recentClicks.length && now - recentClicks[0] >= 1000) recentClicks.shift();
+    if (recentClicks.length < C.maxClicksPerSecond) {
+      recentClicks.push(now);
+      return false;
+    }
+    return true;
+  }
+
+  function blockClick(x, y, now) {
+    state.rateLimited++;
+    UI.floatText(x, y, '429', 'bad');
+    if (now - lastRateWarn < C.rateLimitWarnCooldown * 1000) return;
+    lastRateWarn = now;
+    const lines = I.t('rate.msgs').split('|');
+    const msg = lines[Math.floor(Math.random() * lines.length)].replace('{max}', C.maxClicksPerSecond);
+    UI.toast(msg, 6000, 'bad');
+    UI.systemLine(msg);
+  }
+
   function doClick(x, y) {
+    const now = performance.now();
+    if (rateLimited(now)) return blockClick(x, y, now);
     const gain = K.click(state);
     UI.floatNumber(x, y, gain);
     UI.typeToken(state.tier);

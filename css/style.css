@@ -396,6 +396,7 @@ body.evolve { animation: evolve 1.2s ease-out; }
 .golden:hover { background: rgba(40, 28, 8, 0.95); }
 .golden.gone { opacity: 0; transform: scale(0.6); pointer-events: none; }
 
+.float.bad { color: var(--red); text-shadow: 0 0 8px var(--red); }
 .float.gold { color: var(--amber); text-shadow: 0 0 10px var(--amber); font-size: 18px; }
 
 .toast.gold { border-color: var(--amber); }

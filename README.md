@@ -49,7 +49,7 @@ node tools/balance-sim.js 4 3   # bot clicando 4×/s, 3 runs
   a velocidade do jogo, porque os efeitos se somam.
 - **Upgrades:** os de clique mantêm o clique relevante no fim do jogo. Os de gerador (×2 com
   10 unidades) dão metas de curto prazo.
-- **Conquistas:** +2% de produção cada (26 no total). Persistem entre singularidades.
+- **Conquistas:** +2% de produção cada (27 no total). Persistem entre singularidades.
 - **Singularidade:** pontos = `floor(∛(tokens da run / 1T))`, e cada ponto vale +2% de produção.
   A raiz cúbica recompensa runs longas sem deixar o bônus explodir. Gastar pontos em perks não
   reduz o bônus.
@@ -75,4 +75,5 @@ Um jogador real deve levar umas 3–4 h na primeira run.
 - Clique no botão **GERAR TOKENS** ou aperte **espaço** (segurar a tecla não conta).
 - `x1 / x10 / max` define quantos geradores ou rivais comprar por clique.
 - Clique no `<|golden|>` quando ele aparecer na tela.
+- Limite de 12 cliques/s: acima disso os cliques não contam (anti-autoclicker, ajustável em `maxClicksPerSecond`).
 - `EN/PT` troca o idioma. `resetar` apaga o save inteiro, inclusive os pontos de AGI.

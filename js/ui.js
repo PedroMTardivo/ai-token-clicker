@@ -262,6 +262,7 @@
       ['stats.upgrades', `${Object.keys(s.upgrades).length}/${C.upgrades.length}`],
       ['stats.multiplier', `×${U.fmt(d.global)}`],
       ['stats.golden', U.fmt(s.goldenClicks)],
+      ['stats.rateLimited', U.fmt(s.rateLimited)],
       ['stats.achievements', `${Object.keys(s.achievements).length}/${C.achievements.length}`],
       ['stats.prestiges', U.fmt(s.prestiges)],
       ['stats.agi', U.fmt(s.agi.points)],
@@ -317,9 +318,13 @@
   }
 
   function floatNumber(x, y, n, cls = '') {
+    floatText(x, y, `+${U.fmt(n)}`, cls);
+  }
+
+  function floatText(x, y, text, cls = '') {
     const f = document.createElement('div');
     f.className = `float ${cls}`;
-    f.textContent = `+${U.fmt(n)}`;
+    f.textContent = text;
     f.style.left = `${x + (Math.random() * 30 - 15)}px`;
     f.style.top = `${y - 10}px`;
     document.body.appendChild(f);
@@ -374,6 +379,6 @@
 
   AIC.ui = {
     init, applyStaticTexts, update, badge, typeToken, systemLine, clearOutput,
-    floatNumber, pulse, flash, toast, spawnGolden, el: () => el,
+    floatNumber, floatText, pulse, flash, toast, spawnGolden, el: () => el,
   };
 })(globalThis.AIC = globalThis.AIC || {});

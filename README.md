@@ -19,6 +19,7 @@ Para publicar, sirva a pasta como site estático (ex.: GitHub Pages → *Deploy 
 | `js/config.js` | **Todo o balanceamento**: custos, multiplicadores, modelos, geradores, upgrades |
 | `js/i18n.js` | Todos os textos em PT/EN, incluindo o que o "modelo" digita ao clicar |
 | `js/core.js` | Regras do jogo (produção, compras, prestígio, conquistas, tokens dourados), sem DOM |
+| `js/audio.js` | Efeitos sonoros e música, sintetizados com Web Audio API (sem arquivos de áudio) |
 | `js/ui.js` | Renderização e efeitos visuais |
 | `js/save.js` | Save em `localStorage` |
 | `js/game.js` | Inicialização, eventos e loop |
@@ -75,6 +76,20 @@ Um jogador real deve levar umas 3–4 h na primeira run.
 
 Copie um bloco `:root[data-theme="..."]` em `css/themes.css`, troque as cores, adicione o id em
 `themes` no `config.js` e o nome `theme.<id>` nas duas línguas em `i18n.js`.
+
+## Áudio
+
+Todo o som é gerado por código em `js/audio.js`:
+
+- **Efeitos:** clique, compra, upgrade, evolução de modelo, token dourado, alucinação, `429`,
+  conquista e singularidade. No tema Windows 98 eles trocam por recriações sintetizadas do
+  "ding", do "chord" e do "tada" (não são os arquivos originais).
+- **Música procedural** em loop (Am–F–C–G; C–Am–F–G no Win98) que ganha uma camada a cada modelo:
+  baixo → arpejo → bumbo e chimbal → caixa → melodia → pad, e acelera no GPT-6. O frenesi
+  acelera o chimbal e a alucinação desafina tudo.
+- O áudio começa no primeiro clique ou tecla (regra dos navegadores) e pausa quando a aba fica em
+  segundo plano. Os botões `sfx` e `♪` no topo ligam e desligam, e os volumes ficam na aba stats.
+- Para testar sem ouvir, `AIC.audio.analyze('model')` renderiza um som offline e retorna pico e RMS.
 
 ## Controles
 

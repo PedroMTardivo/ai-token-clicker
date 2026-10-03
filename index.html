@@ -19,6 +19,8 @@
     <div class="brand">&gt; ai_token_clicker<span class="cursor">_</span></div>
     <div class="top-actions">
       <select id="theme-select" class="chip"></select>
+      <button id="sfx-toggle" class="chip">sfx</button>
+      <button id="music-toggle" class="chip">♪</button>
       <button id="lang-toggle" class="chip" title="PT / EN">EN</button>
       <button id="reset-btn" class="chip danger" data-i18n="ui.reset"></button>
     </div>
@@ -126,6 +128,14 @@
 
       <div class="tab-panel" data-panel="stats" hidden>
         <div class="section-head">
+          <h2 data-i18n="audio.title"></h2>
+        </div>
+        <div class="stats audio-settings">
+          <label class="stat"><span data-i18n="audio.sfx"></span><input id="sfx-volume" type="range" min="0" max="1" step="0.05"></label>
+          <label class="stat"><span data-i18n="audio.music"></span><input id="music-volume" type="range" min="0" max="1" step="0.05"></label>
+        </div>
+
+        <div class="section-head">
           <h2 data-i18n="ui.stats"></h2>
         </div>
         <div id="stats" class="stats"></div>
@@ -140,6 +150,7 @@
   <script src="js/util.js"></script>
   <script src="js/core.js"></script>
   <script src="js/save.js"></script>
+  <script src="js/audio.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/game.js"></script>
 </body>

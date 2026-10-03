@@ -210,6 +210,9 @@
       'stats.rateLimited': 'cliques barrados (429)',
 
       'ui.theme': 'tema',
+      'audio.title': 'som',
+      'audio.sfx': 'efeitos sonoros',
+      'audio.music': 'música',
       'theme.terminal': 'Terminal',
       'theme.dark': 'Escuro',
       'theme.light': 'Claro',
@@ -437,6 +440,9 @@
       'stats.rateLimited': 'clicks blocked (429)',
 
       'ui.theme': 'theme',
+      'audio.title': 'sound',
+      'audio.sfx': 'sound effects',
+      'audio.music': 'music',
       'theme.terminal': 'Terminal',
       'theme.dark': 'Dark',
       'theme.light': 'Light',

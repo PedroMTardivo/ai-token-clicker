@@ -1,6 +1,6 @@
 // Ponto de entrada: carrega o save, liga os eventos e roda o loop.
 (function (AIC) {
-  const { config: C, core: K, i18n: I, ui: UI, save: S, util: U } = AIC;
+  const { config: C, core: K, i18n: I, ui: UI, save: S, util: U, audio: A } = AIC;
   let state;
 
   function applyOffline() {
@@ -29,6 +29,7 @@
   function blockClick(x, y, now) {
     state.rateLimited++;
     UI.floatText(x, y, '429', 'bad');
+    A.play('blocked');
     if (now - lastRateWarn < C.rateLimitWarnCooldown * 1000) return;
     lastRateWarn = now;
     const lines = I.t('rate.msgs').split('|');
@@ -42,6 +43,7 @@
     if (rateLimited(now)) return blockClick(x, y, now);
     const gain = K.click(state);
     UI.floatNumber(x, y, gain);
+    A.play('click');
     UI.typeToken(state.tier);
     UI.pulse(UI.el().prompt);
   }
@@ -50,6 +52,7 @@
     const r = K.claimGolden(state);
     const msg = I.t(`golden.${r.id}`, { s: r.dur, n: U.fmt(r.amount || 0) });
     if (r.amount) UI.floatNumber(x, y, r.amount, 'gold');
+    A.play(r.id === 'hallucination' ? 'hallucination' : 'goldenClaim');
     UI.toast(msg, 5000, r.id === 'hallucination' ? 'bad' : 'gold');
     UI.systemLine(msg);
     UI.update(state);
@@ -64,6 +67,7 @@
       : fresh.map((id) => I.t('ach.unlocked', { name: I.t(`ach.${id}.name`) })).join(' · ');
     UI.toast(msg, 5000, 'ach');
     UI.badge('achievements', state);
+    A.play('achievement');
   }
 
   function bindEvents() {
@@ -91,18 +95,23 @@
       const b = e.target.closest('[data-tab]');
       if (!b) return;
       state.tab = b.dataset.tab;
+      A.play('ui');
       UI.update(state);
     });
 
     el.upgrades.addEventListener('click', (e) => {
       const b = e.target.closest('[data-upg]');
-      if (b && K.buyUpgrade(state, b.dataset.upg)) UI.update(state);
+      if (b && K.buyUpgrade(state, b.dataset.upg)) {
+        A.play('upgrade');
+        UI.update(state);
+      }
     });
 
     // Geradores e rivais usam o mesmo fluxo de compra.
     const buyBuilding = (e) => {
       const b = e.target.closest('[data-gen]');
       if (b && K.buyGen(state, b.dataset.gen, state.buyAmount)) {
+        A.play('buy');
         UI.pulse(b);
         UI.update(state);
       }
@@ -126,6 +135,7 @@
       UI.toast(msg);
       UI.systemLine(msg);
       UI.flash('evolve');
+      A.play('model');
       S.save(state);
       UI.update(state);
     });
@@ -133,6 +143,7 @@
     el.perks.addEventListener('click', (e) => {
       const b = e.target.closest('[data-perk]');
       if (b && K.buyPerk(state, b.dataset.perk)) {
+        A.play('upgrade');
         UI.pulse(b);
         S.save(state);
         UI.update(state);
@@ -148,6 +159,7 @@
       UI.systemLine(`${C.models[state.tier].name} online.`);
       UI.toast(msg, 6000, 'gold');
       UI.flash('singularity');
+      A.play('prestige');
       checkAchievements();
       S.save(state);
       UI.update(state);
@@ -158,11 +170,29 @@
       document.documentElement.dataset.theme = theme;
       try { localStorage.setItem('ai-token-clicker.theme', theme); } catch { /* storage indisponível */ }
       el.theme.blur(); // senão o espaço reabre o seletor em vez de clicar
+      A.setStyle(theme === 'win98' ? 'win98' : 'chip');
+      A.play(theme === 'win98' ? 'startup' : 'ui');
     });
+
+    // Áudio só pode começar depois de um gesto do usuário (regra dos navegadores).
+    for (const ev of ['pointerdown', 'keydown']) document.addEventListener(ev, A.unlock, { capture: true });
+
+    for (const kind of ['sfx', 'music']) {
+      const btn = document.getElementById(`${kind}-toggle`);
+      const slider = document.getElementById(`${kind}-volume`);
+      btn.addEventListener('click', () => {
+        A.toggle(kind);
+        syncAudioControls();
+        A.play('ui');
+      });
+      slider.addEventListener('input', () => A.setVolume(kind, Number(slider.value)));
+      slider.addEventListener('change', () => A.play(kind === 'sfx' ? 'buy' : 'ui'));
+    }
 
     el.lang.addEventListener('click', () => {
       state.lang = I.lang = I.lang === 'pt' ? 'en' : 'pt';
       UI.applyStaticTexts();
+      syncAudioControls();
       UI.update(state);
       S.save(state);
     });
@@ -181,6 +211,17 @@
     document.addEventListener('visibilitychange', () => { if (document.hidden) S.save(state); });
   }
 
+  function syncAudioControls() {
+    const s = A.settings;
+    for (const kind of ['sfx', 'music']) {
+      const btn = document.getElementById(`${kind}-toggle`);
+      btn.classList.toggle('off', !s[kind]);
+      btn.title = I.t(`audio.${kind}`);
+      btn.setAttribute('aria-pressed', String(s[kind]));
+      document.getElementById(`${kind}-volume`).value = kind === 'sfx' ? s.sfxVol : s.musicVol;
+    }
+  }
+
   function start() {
     state = S.load();
     I.lang = state.lang || I.detect();
@@ -188,6 +229,8 @@
 
     UI.init();
     UI.applyStaticTexts();
+    A.setStyle(document.documentElement.dataset.theme === 'win98' ? 'win98' : 'chip');
+    syncAudioControls();
     bindEvents();
     applyOffline();
     UI.systemLine(`${C.models[state.tier].name} online.`);
@@ -199,7 +242,13 @@
       const now = performance.now();
       K.tick(state, Math.min((now - last) / 1000, K.offlineCapHours(state) * 3600));
       last = now;
+      A.setMood({
+        tier: state.tier,
+        frenzy: state.buffs.some((b) => b.id === 'frenzy' || b.id === 'clickFrenzy'),
+        hallucination: state.buffs.some((b) => b.id === 'hallucination'),
+      });
       if (state.goldenIn <= 0) {
+        if (!document.hidden) A.play('goldenSpawn');
         UI.spawnGolden(claimGolden);
         K.scheduleGolden(state);
       }

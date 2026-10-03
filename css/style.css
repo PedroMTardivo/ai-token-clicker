@@ -82,6 +82,9 @@ select.chip {
   cursor: pointer;
 }
 select.chip option { background: var(--panel); color: var(--fg); }
+.chip.off { opacity: 0.55; }
+.chip.off::after { content: " ×"; }
+.audio-settings input[type="range"] { width: 50%; accent-color: var(--accent); }
 .chip.danger:hover { color: var(--red); border-color: var(--red); }
 
 /* ---- layout ---- */
@@ -309,7 +312,7 @@ body.evolve { animation: evolve 1.2s ease-out; }
   .brand { font-size: 12px; }
   .top-actions { gap: 4px; }
   .chip { padding: 4px 6px; }
-  select.chip { max-width: 104px; }
+  select.chip { max-width: 96px; }
 }
 
 /* ---- abas ---- */

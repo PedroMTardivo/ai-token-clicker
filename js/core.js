@@ -89,6 +89,7 @@
       else if (u.type === 'clickTps') clickTps += u.value;
       else if (u.type === 'tpsMult') tpsMult *= u.value;
       else if (u.type === 'genMult') genMult[u.target] = (genMult[u.target] || 1) * u.value;
+      else if (u.type === 'synergy') genMult[u.target] = (genMult[u.target] || 1) * (1 + u.value * owned(s, u.source));
     }
     let buffTps = 1, buffClick = 1;
     for (const b of s.buffs) {
@@ -115,6 +116,7 @@
 
   function upgradeVisible(s, u) {
     if (s.upgrades[u.id] || s.tier < u.tier) return false;
+    if (u.type === 'synergy') return owned(s, u.source) >= u.req;
     return u.type !== 'genMult' || owned(s, u.target) >= (u.req || 1);
   }
 

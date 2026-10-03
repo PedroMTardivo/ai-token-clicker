@@ -14,11 +14,11 @@
     models: [
       { id: 'gpt1', name: 'GPT-1', cost: 0, mult: 1 },
       { id: 'gpt2', name: 'GPT-2', cost: 2500, mult: 2 },
-      { id: 'gpt3', name: 'GPT-3', cost: 300e3, mult: 3 },
-      { id: 'gpt35', name: 'GPT-3.5', cost: 100e6, mult: 3 },
-      { id: 'gpt4', name: 'GPT-4', cost: 60e9, mult: 4 },
-      { id: 'gpt5', name: 'GPT-5', cost: 80e12, mult: 5 },
-      { id: 'gpt6sol', name: 'GPT-6 Sol', cost: 200e15, mult: 10 },
+      { id: 'gpt3', name: 'GPT-3', cost: 400e3, mult: 3 },
+      { id: 'gpt35', name: 'GPT-3.5', cost: 300e6, mult: 3 },
+      { id: 'gpt4', name: 'GPT-4', cost: 400e9, mult: 4 },
+      { id: 'gpt5', name: 'GPT-5', cost: 90e12, mult: 5 },
+      { id: 'gpt6sol', name: 'GPT-6 Sol', cost: 150e15, mult: 10 },
     ],
 
     // tier = índice do modelo necessário para desbloquear.
@@ -35,7 +35,8 @@
 
     // Upgrades de compra única.
     // type: clickAdd (+N por clique), clickMult (×N no clique), clickTps (clique ganha N × tokens/s),
-    //       tpsMult (×N em todos os geradores), genMult (×N em um gerador; exige `req` unidades dele)
+    //       tpsMult (×N em todos os geradores), genMult (×N em um gerador; exige `req` unidades dele),
+    //       synergy (`target` ganha +value por unidade de `source`; exige `req` unidades de `source`)
     upgrades: [
       { id: 'prompt_eng', cost: 50, tier: 0, type: 'clickAdd', value: 1 },
       { id: 'few_shot', cost: 400, tier: 0, type: 'clickMult', value: 2 },
@@ -60,17 +61,18 @@
       { id: 'quantum_ecc', cost: 300e15, tier: 6, type: 'genMult', target: 'quantum', value: 2, req: 10 },
     ],
 
+    // Rivais produzem pouco de propósito: o papel deles é o efeito especial, não a produção principal.
     // Laboratórios rivais: geradores com um efeito extra que cresce com a quantidade.
     // effect.type: genDiscount (geradores mais baratos), clickBoost (+% clique), passiveBoost (+% produção passiva),
     //              goldenSpeed (tokens dourados mais frequentes), offlineHours (+h de limite offline)
     // `growth` sobrescreve o costGrowth padrão.
     rivals: [
-      { id: 'llama', cost: 100e3, tps: 60, tier: 2, growth: 1.2, effect: { type: 'genDiscount', value: 0.01, max: 0.25 } },
-      { id: 'claude', cost: 20e6, tps: 4e3, tier: 3, growth: 1.2, effect: { type: 'clickBoost', value: 0.1, max: 1 } },
-      { id: 'gemini', cost: 30e6, tps: 5e3, tier: 3, growth: 1.2, effect: { type: 'passiveBoost', value: 0.02, max: 0.5 } },
-      { id: 'deepseek', cost: 5e9, tps: 3e5, tier: 4, growth: 1.1 },
-      { id: 'grok', cost: 20e9, tps: 6e5, tier: 4, growth: 1.2, effect: { type: 'goldenSpeed', value: 0.05, max: 0.6 } },
-      { id: 'mistral', cost: 20e12, tps: 1e8, tier: 5, growth: 1.2, effect: { type: 'offlineHours', value: 1, max: 40 } },
+      { id: 'llama', cost: 100e3, tps: 15, tier: 2, growth: 1.2, effect: { type: 'genDiscount', value: 0.01, max: 0.25 } },
+      { id: 'claude', cost: 20e6, tps: 1e3, tier: 3, growth: 1.2, effect: { type: 'clickBoost', value: 0.1, max: 1 } },
+      { id: 'gemini', cost: 30e6, tps: 1250, tier: 3, growth: 1.2, effect: { type: 'passiveBoost', value: 0.02, max: 0.5 } },
+      { id: 'deepseek', cost: 5e9, tps: 75e3, tier: 4, growth: 1.13 },
+      { id: 'grok', cost: 20e9, tps: 150e3, tier: 4, growth: 1.2, effect: { type: 'goldenSpeed', value: 0.05, max: 0.6 } },
+      { id: 'mistral', cost: 20e12, tps: 25e6, tier: 5, growth: 1.2, effect: { type: 'offlineHours', value: 1, max: 40 } },
     ],
 
     // Prestígio: pontos = floor((tokens da run / divisor) ^ exponent). Cada ponto dá +bonusPerPoint de produção.
@@ -137,4 +139,34 @@
       { id: 'rate_limited', type: 'rateLimited', n: 1 },
     ],
   };
+
+  const C = AIC.config;
+
+  // Upgrades gerados para cada gerador: ×2 com 25 unidades, ×2 com 50 e ×3 com 100.
+  // Nomes vêm de modelos em i18n.js (upgTier.<tier>), ex.: "GPU usada Pro Max".
+  const GEN_TIERS = [
+    { tier: 'pro', req: 25, value: 2, costX: 100 },
+    { tier: 'max', req: 50, value: 2, costX: 3000 },
+    { tier: 'ent', req: 100, value: 3, costX: 3e6 },
+  ];
+  for (const t of GEN_TIERS) {
+    for (const g of C.generators) {
+      C.upgrades.push({
+        id: `${g.id}_${t.tier}`, cost: g.cost * t.costX, tier: g.tier,
+        type: 'genMult', target: g.id, value: t.value, req: t.req, template: t.tier,
+      });
+    }
+  }
+
+  // Sinergias: cada gerador ganha +8% por unidade do gerador seguinte. Mantém o penúltimo gerador
+  // relevante em vez de só o último disponível importar.
+  C.generators.slice(0, -1).forEach((g, i) => {
+    const next = C.generators[i + 1];
+    C.upgrades.push({
+      id: `syn_${g.id}`, cost: next.cost * 30, tier: next.tier,
+      type: 'synergy', target: g.id, source: next.id, value: 0.08, req: 15,
+    });
+  });
+
+  C.achievements.find((a) => a.id === 'upg_all').n = C.upgrades.length;
 })(globalThis.AIC = globalThis.AIC || {});

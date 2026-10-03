@@ -52,6 +52,19 @@
     </button>`;
   }
 
+  // Upgrades gerados (tiers e sinergias) montam nome/descrição a partir de modelos.
+  function upgName(u) {
+    return u.template ? t(`upgTier.${u.template}.name`, { name: t(`gen.${u.target}.name`) }) : t(`upg.${u.id}.name`);
+  }
+
+  function upgDesc(u) {
+    if (u.template) return t(`upgTier.${u.template}.desc`, { name: t(`gen.${u.target}.name`) });
+    if (u.type === 'synergy') {
+      return t('upg.synergy.desc', { target: t(`gen.${u.target}.name`), source: t(`gen.${u.source}.name`), pct: Math.round(u.value * 100) });
+    }
+    return t(`upg.${u.id}.desc`);
+  }
+
   const lockedHtml = (name, tier) => `<div class="item locked"><div class="item-top"><span class="item-name">${name}</span></div>
     <div class="item-desc">${t('ui.locked', { name: C.models[tier].name })}</div></div>`;
 
@@ -89,8 +102,8 @@
     el.upgrades.innerHTML = upgs.length
       ? upgs.map((u) => itemHtml({
           attr: 'data-upg', id: u.id,
-          cmd: `install ${slug(t(`upg.${u.id}.name`))}`,
-          name: t(`upg.${u.id}.name`), desc: t(`upg.${u.id}.desc`),
+          cmd: `install ${slug(upgName(u))}`,
+          name: upgName(u), desc: upgDesc(u),
         })).join('')
       : `<p class="empty">${t('ui.noUpgrades')}</p>`;
 

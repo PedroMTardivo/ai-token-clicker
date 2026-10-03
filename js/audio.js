@@ -119,7 +119,7 @@
 
   const SFX = {
     chip: {
-      click: { gap: 0.03, play: (o, t) => { const f = midi(84 + Math.floor(Math.random() * 4)); tone(o, t, { f, f2: f * 1.5, dur: 0.05, vol: 0.22 }); } },
+      click: { gap: 0.03, play: (o, t) => { const f = midi(72 + Math.floor(Math.random() * 4)); tone(o, t, { f, f2: f * 1.3, dur: 0.055, vol: 0.24, lp: 2500 }); } },
       blocked: { gap: 0.09, play: (o, t) => { tone(o, t, { type: 'sawtooth', f: 160, f2: 70, dur: 0.16, vol: 0.22 }); tone(o, t, { f: 110, dur: 0.14, vol: 0.1, detune: 30 }); } },
       buy: { gap: 0.04, play: (o, t) => { tone(o, t, { f: midi(88), dur: 0.06, vol: 0.13 }); tone(o, t + 0.06, { f: midi(95), dur: 0.14, vol: 0.13 }); } },
       upgrade: { gap: 0.05, play: (o, t) => seq(o, t, [76, 80, 83, 88], 0.05, { dur: 0.12, vol: 0.11 }) },
@@ -149,7 +149,7 @@
 
     // Aproximações sintetizadas, não os arquivos originais.
     win98: {
-      click: { gap: 0.03, play: (o, t) => noise(o, t, { hp: 3500, dur: 0.022, vol: 0.35 }) },
+      click: { gap: 0.03, play: (o, t) => noise(o, t, { hp: 1800, dur: 0.025, vol: 0.35 }) },
       blocked: { gap: 0.25, play: (o, t) => chord(o, t, [57, 60, 64, 69], { type: 'triangle', dur: 0.55, vol: 0.06, attack: 0.003 }) }, // "Chord"
       buy: { gap: 0.04, play: (o, t) => bell(o, t, 88, 0.15, 0.5) }, // "Ding"
       upgrade: { gap: 0.05, play: (o, t) => bell(o, t, 91, 0.15, 0.7) },

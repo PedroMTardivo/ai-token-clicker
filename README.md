@@ -46,11 +46,14 @@ node tools/balance-sim.js 4 3   # bot clicando 4×/s, 3 runs
   e rende cerca de 5–8× mais. Eles são liberados conforme o modelo.
 - **Modelos:** multiplicam toda a produção de forma cumulativa (GPT-2 ×2 … GPT-6 Sol ×10, total ×2160).
   Como a produção cresce exponencialmente, o custo de cada modelo sobe de 300× a 2500× em relação ao anterior.
-- **Laboratórios rivais:** produzem pouco em relação ao custo. O valor deles está no efeito
-  especial, que tem teto, e o custo cresce 1.2× por unidade. Sem o teto, o Gemini sozinho dobrava
-  a velocidade do jogo, porque os efeitos se somam.
-- **Upgrades:** os de clique mantêm o clique relevante no fim do jogo. Os de gerador (×2 com
-  10 unidades) dão metas de curto prazo.
+- **Laboratórios rivais:** produzem pouco (~20% da produção no fim do jogo). O valor deles está no
+  efeito especial, que tem teto, e o custo cresce 1.2× por unidade.
+- **Upgrades (51):** os de clique mantêm o clique relevante no fim do jogo. Cada gerador tem ×2 com
+  10 unidades, ×2 com 25 ("Pro"), ×2 com 50 ("Pro Max") e ×3 com 100 ("Enterprise Edition"). Os
+  tiers são gerados no fim do `config.js`, com nomes vindos de modelos em `i18n.js`.
+- **Sinergias:** cada gerador ganha +8% por unidade do gerador seguinte. Sem elas, o último gerador
+  disponível fazia 70–85% da produção e o penúltimo caía para menos de 2%. Com elas, o penúltimo
+  fica entre 16% e 45%.
 - **Conquistas:** +2% de produção cada (27 no total). Persistem entre singularidades.
 - **Singularidade:** pontos = `floor(∛(tokens da run / 1T))`, e cada ponto vale +2% de produção.
   A raiz cúbica recompensa runs longas sem deixar o bônus explodir. Gastar pontos em perks não
@@ -61,14 +64,14 @@ node tools/balance-sim.js 4 3   # bot clicando 4×/s, 3 runs
 
 **Ritmo medido pelo bot** (4 cliques/s, sem tokens dourados):
 
-| Marco | Run 1 | Run 2 (61 pts AGI) | Run 3 (122 pts) |
+| Marco | Run 1 | Run 2 (55 pts AGI) | Run 3 (110 pts) |
 |---|---|---|---|
 | GPT-2 | ~4 min | início | início |
-| GPT-3 | ~12 min | ~3 min | início |
-| GPT-3.5 | ~28 min | ~8 min | início |
-| GPT-4 (libera a singularidade; o 1º ponto vem logo depois) | ~45 min | ~15 min | ~5 min |
-| GPT-5 | ~1h25 | ~30 min | ~15 min |
-| GPT-6 Sol | ~2h25 | ~55 min | ~30 min |
+| GPT-3 | ~11 min | ~3 min | início |
+| GPT-3.5 | ~21 min | ~6 min | início |
+| GPT-4 (libera a singularidade; o 1º ponto vem logo depois) | ~54 min | ~20 min | ~9 min |
+| GPT-5 | ~1h30 | ~35 min | ~20 min |
+| GPT-6 Sol | ~2h27 | ~1h | ~35 min |
 
 Um jogador real deve levar umas 3–4 h na primeira run.
 

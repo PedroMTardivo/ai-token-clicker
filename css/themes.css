@@ -254,3 +254,44 @@
 [data-theme="win98"] .buff { border: 1px solid #000; background: #ffffe1; color: #000; }
 [data-theme="win98"] .golden { box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35); }
 [data-theme="win98"] .golden:hover { background: #ffffc0; }
+
+/* Temas exclusivos: liberados ao concluir a linhagem correspondente (config.themeUnlocks). */
+
+/* Claude: terracota e creme */
+:root[data-theme="claude"] {
+  --bg: #262624;
+  --panel: #30302e;
+  --term: #1f1e1d;
+  --line: #45443f;
+  --fg: #f5f4ed;
+  --muted: #a6a39a;
+  --accent: #d97757;
+  --accent-dim: #8a4b37;
+  --accent2: #e8c07d;
+  --red: #e5534b;
+  --glow-a: 20%;
+  --scan: 0;
+}
+
+/* Gemini: azul e roxo, com o contador em degradê */
+:root[data-theme="gemini"] {
+  --bg: #131314;
+  --panel: #1e1f20;
+  --term: #0e0e0f;
+  --line: #2f3133;
+  --fg: #e3e3e3;
+  --muted: #9aa0a6;
+  --accent: #8ab4f8;
+  --accent-dim: #3c5a9a;
+  --accent2: #c58af9;
+  --red: #f28b82;
+  --glow-a: 30%;
+  --scan: 0;
+}
+[data-theme="gemini"] .tokens {
+  background: linear-gradient(90deg, #4f8ff7, #a87ffb, #ec6f9c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+}

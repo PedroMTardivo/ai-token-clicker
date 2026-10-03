@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- CSP: só scripts locais (+ o script inline de tema, pelo hash). Se mudar esse script, atualize o hash. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-RFTjU48AvvVAhBfOYGXn4vvBrXKUfm+fiVduOhLJNQE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
   <title>AI Token Clicker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,12 +37,13 @@
           <span><b id="tps">0</b> <span data-i18n="ui.perSecond"></span></span>
           <span class="sep">·</span>
           <span><b id="per-click">1</b> <span data-i18n="ui.perClick"></span></span>
+          <span id="auto-wrap" hidden><span class="sep">·</span> <b id="auto-rate">0</b> <span data-i18n="ui.autoRate"></span></span>
         </div>
         <div id="buffs" class="buffs"></div>
       </div>
 
       <div class="model-box">
-        <div class="muted small" data-i18n="ui.currentModel"></div>
+        <div class="muted small"><span data-i18n="ui.currentModel"></span><span id="model-lineage"></span></div>
         <div id="model-name" class="model-name">GPT-1</div>
         <div id="model-desc" class="muted small"></div>
         <button id="model-next" class="model-btn">
@@ -67,6 +70,7 @@
         <button data-tab="labs"><span data-i18n="tab.labs"></span></button>
         <button data-tab="agi"><span data-i18n="tab.agi"></span></button>
         <button data-tab="achievements"><span data-i18n="tab.achievements"></span></button>
+        <button data-tab="compute" id="tab-compute" hidden><span data-i18n="tab.compute"></span></button>
         <button data-tab="stats"><span data-i18n="tab.stats"></span></button>
       </nav>
 
@@ -113,6 +117,11 @@
         <p id="agi-note" class="empty"></p>
         <p id="agi-explain" class="muted small"></p>
         <div class="section-head">
+          <h2 data-i18n="lineage.title"></h2>
+        </div>
+        <p id="lineage-note" class="empty"></p>
+        <div id="lineages" class="list"></div>
+        <div class="section-head">
           <h2 data-i18n="agi.perks"></h2>
         </div>
         <div id="perks" class="list"></div>
@@ -124,6 +133,25 @@
           <span id="ach-summary" class="muted small"></span>
         </div>
         <div id="achievements" class="ach-grid"></div>
+      </div>
+
+      <!-- Só no app desktop (desktop/): moeda ganha com os tokens reais do Claude Code. -->
+      <div class="tab-panel" data-panel="compute" hidden>
+        <div class="section-head">
+          <h2 data-i18n="compute.title"></h2>
+          <span id="compute-balance" class="compute-balance"></span>
+        </div>
+        <div id="compute-status" class="stats agi-box"></div>
+        <div class="section-head">
+          <h2 data-i18n="compute.days"></h2>
+        </div>
+        <div id="compute-days" class="compute-days"></div>
+        <div class="section-head">
+          <h2 data-i18n="compute.shop"></h2>
+        </div>
+        <div id="compute-shop" class="list"></div>
+        <p class="muted small" data-i18n="compute.explain"></p>
+        <p class="muted small" data-i18n="compute.privacy"></p>
       </div>
 
       <div class="tab-panel" data-panel="stats" hidden>
@@ -149,6 +177,7 @@
   <script src="js/i18n.js"></script>
   <script src="js/util.js"></script>
   <script src="js/core.js"></script>
+  <script src="js/compute.js"></script>
   <script src="js/save.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/ui.js"></script>

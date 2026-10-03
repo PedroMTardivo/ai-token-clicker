@@ -14,17 +14,21 @@
   const badges = new Set();
   const outputState = { line: null, words: [], pos: 0 };
   let golden = null;
+  let usage = null; // último resumo de uso vindo do app desktop (null na versão web)
 
   function init() {
     el = {
-      tokens: $('tokens'), tps: $('tps'), perClick: $('per-click'), buffs: $('buffs'),
+      tokens: $('tokens'), tps: $('tps'), perClick: $('per-click'), autoWrap: $('auto-wrap'), autoRate: $('auto-rate'), buffs: $('buffs'),
       modelName: $('model-name'), modelDesc: $('model-desc'),
       modelBtn: $('model-next'), modelCmd: $('model-cmd'), modelCost: $('model-cost'), modelBar: $('model-bar'),
       prompt: $('prompt-btn'), output: $('output'),
       tabs: $('tabs'), upgrades: $('upgrades'), gens: $('generators'), rivals: $('rivals'), installed: $('installed'),
       agi: $('agi'), prestigeBtn: $('prestige-btn'), prestigeGain: $('prestige-gain'), agiNote: $('agi-note'),
-      agiExplain: $('agi-explain'), perks: $('perks'),
+      agiExplain: $('agi-explain'), perks: $('perks'), lineages: $('lineages'), lineageNote: $('lineage-note'),
+      modelLineage: $('model-lineage'),
       achievements: $('achievements'), achSummary: $('ach-summary'),
+      computeBalance: $('compute-balance'), computeStatus: $('compute-status'),
+      computeDays: $('compute-days'), computeShop: $('compute-shop'),
       stats: $('stats'), toasts: $('toasts'), lang: $('lang-toggle'), theme: $('theme-select'),
     };
   }
@@ -35,21 +39,27 @@
     el.lang.textContent = I.lang === 'pt' ? 'EN' : 'PT';
     el.theme.setAttribute('aria-label', t('ui.theme'));
     el.theme.title = t('ui.theme');
-    el.theme.innerHTML = C.themes.map((id) => `<option value="${id}">${t(`theme.${id}`)}</option>`).join('');
-    el.theme.value = document.documentElement.dataset.theme || C.themes[0];
-    el.agiExplain.textContent = t('agi.explain', { pct: Math.round(C.prestige.bonusPerPoint * 100) });
+    el.agiExplain.textContent = t('agi.explain', { pct: U.fmt(C.prestige.bonusPerPoint * 100) });
     for (const k in sigs) delete sigs[k]; // força reconstrução das listas no próximo update
   }
 
   const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-  function itemHtml({ attr, id, cmd, name, desc, extra = '' }) {
+  function itemHtml({ attr, id, cmd, name, desc, extra = '', effect = false }) {
     return `<button class="item" ${attr}="${id}">
       <div class="item-top"><span class="item-name">${name}</span>${extra}</div>
       <div class="item-cmd"><span class="ps">$</span> ${cmd}</div>
-      <div class="item-desc">${desc}</div>
+      <div class="item-desc">${desc}</div>${effect ? '\n      <div class="item-effect"></div>' : ''}
       <div class="item-meta"><span class="item-cost"></span><span class="item-rate"></span></div>
     </button>`;
+  }
+
+  // Efeito atual de um rival, já com a curva de retorno decrescente (ex.: "clique +45%").
+  function effectText(s, r) {
+    if (!r?.effect) return '';
+    const v = K.rivalEffectOf(s, r);
+    const n = r.effect.type === 'offlineHours' ? U.fmt(v) : (v * 100).toFixed(v < 0.1 ? 1 : 0);
+    return t(`effect.${r.effect.type}`, { n });
   }
 
   // Upgrades gerados (tiers e sinergias) montam nome/descrição a partir de modelos.
@@ -59,14 +69,15 @@
 
   function upgDesc(u) {
     if (u.template) return t(`upgTier.${u.template}.desc`, { name: t(`gen.${u.target}.name`) });
+    if (u.type === 'rivalBoost') return t('upg.rivalBoost.desc', { name: t(`rival.${u.target}.name`) });
     if (u.type === 'synergy') {
       return t('upg.synergy.desc', { target: t(`gen.${u.target}.name`), source: t(`gen.${u.source}.name`), pct: Math.round(u.value * 100) });
     }
     return t(`upg.${u.id}.desc`);
   }
 
-  const lockedHtml = (name, tier) => `<div class="item locked"><div class="item-top"><span class="item-name">${name}</span></div>
-    <div class="item-desc">${t('ui.locked', { name: C.models[tier].name })}</div></div>`;
+  const lockedHtml = (name, modelName) => `<div class="item locked"><div class="item-top"><span class="item-name">${name}</span></div>
+    <div class="item-desc">${t('ui.locked', { name: modelName })}</div></div>`;
 
   // Abas
   function setBadge(tab, on) {
@@ -114,7 +125,7 @@
       extra: '<span class="item-owned"></span>',
     })).join('');
     const locked = C.generators.find((g) => !K.genVisible(s, g));
-    if (locked) html += lockedHtml('???', locked.tier);
+    if (locked) html += lockedHtml('???', K.modelsOf(s)[locked.tier].name);
     el.gens.innerHTML = html;
 
     highlightNew(s, [...upgs.map((u) => u.id), ...gens.map((g) => g.id)], el.gens.parentElement, 'shop');
@@ -127,8 +138,9 @@
           cmd: `hire ${r.id}`,
           name: t(`rival.${r.id}.name`), desc: t(`rival.${r.id}.desc`),
           extra: '<span class="item-owned"></span>',
+          effect: !!r.effect,
         })
-      : lockedHtml(t(`rival.${r.id}.name`), r.tier)).join('');
+      : lockedHtml(t(`rival.${r.id}.name`), K.modelsOf(s)[r.tier].name)).join('');
     highlightNew(s, C.rivals.filter((r) => K.genVisible(s, r)).map((r) => r.id), el.rivals, 'labs');
   }
 
@@ -142,7 +154,8 @@
 
   function achDesc(a) {
     const vars = { n: U.fmt(a.n) };
-    if (a.type === 'tier') vars.name = C.models[a.n].name;
+    if (a.type === 'tier') vars.name = C.models[a.n].name; // conquistas de modelo são da escada GPT
+    if (a.type === 'lineage') vars.name = t(`lineage.${a.target}.name`);
     if (a.type === 'gen') vars.name = t(`gen.${a.target}.name`);
     return t(`achd.${a.type}`, vars);
   }
@@ -173,17 +186,22 @@
     el.tokens.textContent = U.fmt(s.tokens);
     el.tps.textContent = U.fmt(d.tps);
     el.perClick.textContent = U.fmt(d.perClick);
+    el.autoWrap.hidden = d.autoClicks <= 0;
+    el.autoRate.textContent = U.fmt(d.autoClicks);
     document.title = `${U.fmt(s.tokens)} tokens · AI Token Clicker`;
-    el.buffs.innerHTML = s.buffs.map((b) =>
+    el.buffs.innerHTML = mechanicChip(s, d) + s.buffs.map((b) =>
       `<span class="buff ${b.mult < 1 ? 'bad' : ''}">${t(`buff.${b.id}`)} · ${Math.ceil(b.left)}s</span>`).join('');
 
     renderTabs(s);
 
     const upgs = C.upgrades.filter((u) => K.upgradeVisible(s, u)).sort((a, b) => a.cost - b.cost);
     const gens = C.generators.filter((g) => K.genVisible(s, g));
-    sync('shop', [I.lang, s.tier, ...upgs.map((u) => u.id)].join('|'), () => renderShop(s, upgs, gens));
-    sync('labs', `${I.lang}|${s.tier}`, () => renderLabs(s));
+    sync('themes', `${I.lang}|${Object.keys(s.lineages).join()}`, () => renderThemes(s));
+    sync('lineages', `${I.lang}|${s.lineage}|${s.nextLineage}|${Object.keys(s.lineages).join()}`, () => renderLineages(s));
+    sync('shop', [I.lang, s.lineage, s.tier, ...upgs.map((u) => u.id)].join('|'), () => renderShop(s, upgs, gens));
+    sync('labs', `${I.lang}|${s.lineage}|${s.tier}`, () => renderLabs(s));
     sync('perks', I.lang, renderPerks);
+    if (AIC.computeSys) sync('cshop', `${I.lang}|${JSON.stringify(s.compute.levels)}`, renderComputeShop);
     sync('ach', `${I.lang}|${Object.keys(s.achievements).length}`, () => renderAchievements(s));
 
     for (const node of el.upgrades.querySelectorAll('[data-upg]')) {
@@ -201,6 +219,8 @@
       node.querySelector('.item-owned').textContent = have ? t('ui.owned', { n: have }) : '';
       node.querySelector('.item-cost').textContent = `${U.fmt(K.genCost(s, id, n))} tk${n > 1 ? ` (×${n})` : ''}`;
       node.querySelector('.item-rate').textContent = t('ui.each', { n: U.fmt(d.genTps[id]) });
+      const effectNode = node.querySelector('.item-effect');
+      if (effectNode) effectNode.textContent = effectText(s, K.rivalById[id]);
       node.classList.toggle('poor', !affordable);
     }
 
@@ -212,11 +232,13 @@
     updateModel(s);
     updateAgi(s);
     if (s.tab === 'stats') renderStats(s, d);
+    if (AIC.computeSys) updateCompute(s);
     firstUpdate = false;
   }
 
   function updateModel(s) {
-    const cur = C.models[s.tier];
+    const cur = K.modelsOf(s)[s.tier];
+    el.modelLineage.textContent = s.lineage === 'gpt' ? '' : t('ui.lineageLabel', { name: t(`lineage.${s.lineage}.name`) });
     const next = K.nextModel(s);
     el.modelName.textContent = cur.name;
     el.modelDesc.textContent = t(`model.${cur.id}.desc`);
@@ -244,12 +266,16 @@
     const avail = K.agiAvailable(s);
     for (const node of el.perks.querySelectorAll('[data-perk]')) {
       const p = K.perkById[node.dataset.perk];
-      const has = K.hasPerk(s, p.id);
+      const lvl = K.perkLevel(s, p.id);
+      const maxed = K.perkMaxed(s, p);
       const needs = p.req && !K.hasPerk(s, p.req);
-      node.classList.toggle('owned', has);
-      node.classList.toggle('poor', !has && !K.perkBuyable(s, p));
-      node.querySelector('.item-owned').textContent = has ? `✓ ${t('agi.owned')}` : '';
-      node.querySelector('.item-cost').textContent = has ? '' : t('agi.cost', { n: p.cost });
+      node.classList.toggle('owned', maxed);
+      node.classList.toggle('poor', !maxed && !K.perkBuyable(s, p));
+      let ownedText = '';
+      if (p.levels) ownedText = lvl ? t(p.max ? 'compute.level' : 'agi.level', { n: lvl, max: p.max }) : '';
+      else if (maxed) ownedText = `✓ ${t('agi.owned')}`;
+      node.querySelector('.item-owned').textContent = ownedText;
+      node.querySelector('.item-cost').textContent = maxed ? (p.levels ? t('compute.maxed') : '') : t('agi.cost', { n: K.perkCost(s, p) });
       node.querySelector('.item-rate').textContent = needs ? t('agi.requires', { name: t(`perk.${p.req}.name`) }) : '';
     }
 
@@ -265,8 +291,102 @@
     el.prestigeBtn.disabled = !can;
     el.prestigeGain.textContent = can ? `+${U.fmt(K.prestigeGain(s))} pts` : '';
     el.agiNote.textContent = s.tier < C.prestige.minTier
-      ? t('agi.locked', { name: C.models[C.prestige.minTier].name })
+      ? t('agi.locked', { name: K.modelsOf(s)[C.prestige.minTier].name })
       : can ? '' : t('agi.notEnough');
+  }
+
+  // ---- linhagens ----
+
+  // Indicador da mecânica da linhagem atual, junto dos buffs.
+  function mechanicChip(s, d) {
+    const mods = K.lineageOf(s).mods || {};
+    if (mods.clickRate) {
+      return `<span class="buff mech">${t('mech.rate', { rate: U.fmt(s.clickRate), mult: d.rateMult.toFixed(1) })}</span>`;
+    }
+    if (mods.diversity) {
+      const n = Math.round((d.diversityMult - 1) / mods.diversity.per);
+      return `<span class="buff mech">${t('mech.diversity', { n, mult: d.diversityMult.toFixed(2) })}</span>`;
+    }
+    return '';
+  }
+
+  function renderLineages(s) {
+    const anyUnlocked = Object.keys(C.lineages).some((id) => id !== 'gpt' && K.lineageUnlocked(s, id));
+    el.lineageNote.textContent = anyUnlocked ? `${t('lineage.pickNote')} ${t('lineage.soon')}` : t('lineage.lockedNote');
+    el.lineages.innerHTML = Object.keys(C.lineages).map((id) => {
+      const unlocked = K.lineageUnlocked(s, id);
+      const tags = [];
+      if (s.lineage === id) tags.push(t('lineage.current'));
+      if (s.nextLineage === id) tags.push(t('lineage.next'));
+      if (s.lineages[id]) tags.push(`✓ ${t('lineage.done')}`);
+      if (!unlocked) tags.push(t('lineage.locked'));
+      return `<button class="item ${unlocked ? '' : 'locked'} ${s.nextLineage === id ? 'owned' : ''}" data-lineage="${id}" ${unlocked ? '' : 'disabled'}>
+        <div class="item-top"><span class="item-name">${t(`lineage.${id}.name`)}</span><span class="item-owned">${tags.join(' · ')}</span></div>
+        <div class="item-desc">${t(`lineage.${id}.desc`)}</div>
+        <div class="item-effect">${t(`lineage.${id}.reward`)}</div>
+      </button>`;
+    }).join('');
+  }
+
+  // Temas exclusivos ficam visíveis, mas desabilitados, até a linhagem correspondente ser concluída.
+  function renderThemes(s) {
+    el.theme.innerHTML = C.themes.map((id) => {
+      const need = C.themeUnlocks[id];
+      const locked = need && !s.lineages[need];
+      const label = locked ? t('theme.locked', { name: t(`theme.${id}`), lineage: t(`lineage.${need}.name`) }) : t(`theme.${id}`);
+      return `<option value="${id}" ${locked ? 'disabled' : ''}>${label}</option>`;
+    }).join('');
+    el.theme.value = document.documentElement.dataset.theme || C.themes[0];
+  }
+
+  // ---- compute (app desktop) ----
+
+  function renderComputeShop() {
+    el.computeShop.innerHTML = C.compute.shop.map((item) => `<button class="item" data-cshop="${item.id}">
+      <div class="item-top"><span class="item-name">${t(`cshop.${item.id}.name`)}</span><span class="item-owned"></span></div>
+      <div class="item-desc">${t(`cshop.${item.id}.desc`)}</div>
+      <div class="item-meta"><span class="item-cost"></span><span class="item-rate"></span></div>
+    </button>`).join('');
+  }
+
+  function updateCompute(s) {
+    const CS = AIC.computeSys;
+    const c = s.compute;
+    el.computeBalance.textContent = t('compute.balance', { n: U.fmt(c.balance) });
+    for (const node of el.computeShop.querySelectorAll('[data-cshop]')) {
+      const item = CS.shopById[node.dataset.cshop];
+      const lvl = CS.level(s, item.id);
+      const maxed = CS.maxed(s, item);
+      node.classList.toggle('poor', !CS.canBuy(s, item));
+      node.querySelector('.item-owned').textContent = item.levels && lvl ? t('compute.level', { n: lvl, max: item.max }) : '';
+      node.querySelector('.item-cost').textContent = maxed ? t('compute.maxed') : `⚡ ${U.fmt(CS.itemCost(s, item))}`;
+    }
+    if (s.tab !== 'compute') return;
+
+    const today = usage?.today;
+    const day = today && usage.days[today];
+    const rows = [
+      ['compute.source', !usage ? t('compute.waiting') : usage.found ? t('compute.connected', { n: usage.files }) : t('compute.notFound')],
+      ['compute.todayRaw', day ? U.fmt(day.input + day.output + day.cacheWrite + day.cacheRead) : '0'],
+      ['compute.todayWeighted', day ? U.fmt(CS.weighted(day)) : '0'],
+      ['compute.todayEarned', `⚡ ${U.fmt((today && c.earned[today]) || 0)}`],
+      ['compute.totalEarned', `⚡ ${U.fmt(c.total)}`],
+    ];
+    el.computeStatus.innerHTML = rows.map(([k, v]) => `<div class="stat"><span>${t(k)}</span><b>${v}</b></div>`).join('');
+
+    if (!today) {
+      el.computeDays.innerHTML = '';
+      return;
+    }
+    const dates = Array.from({ length: 7 }, (_, i) => CS.addDays(today, i - 6));
+    const w = dates.map((dt) => (usage.days[dt] ? CS.weighted(usage.days[dt]) : 0));
+    const max = Math.max(1, ...w);
+    el.computeDays.innerHTML = dates.map((dt, i) => `<div class="cday ${dt === today ? 'today' : ''}">
+      <span>${dt.slice(8)}/${dt.slice(5, 7)}</span>
+      <span class="bar"><span style="width:${(w[i] / max) * 100}%"></span></span>
+      <span class="w">${U.fmt(w[i])}</span>
+      <b>${c.earned[dt] ? `+${U.fmt(c.earned[dt])}` : '—'}</b>
+    </div>`).join('');
   }
 
   function renderStats(s, d) {
@@ -395,7 +515,7 @@
   }
 
   AIC.ui = {
-    init, applyStaticTexts, update, badge, typeToken, systemLine, clearOutput,
+    init, applyStaticTexts, update, badge, setUsage: (u) => { usage = u; }, typeToken, systemLine, clearOutput,
     floatNumber, floatText, pulse, flash, toast, spawnGolden, el: () => el,
   };
 })(globalThis.AIC = globalThis.AIC || {});

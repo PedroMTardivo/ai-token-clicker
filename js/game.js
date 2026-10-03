@@ -70,6 +70,50 @@
     A.play('achievement');
   }
 
+  // App desktop: o resumo de uso dos logs do Claude Code vira compute.
+  function handleUsage(summary) {
+    UI.setUsage(summary);
+    const first = !state.compute.connectedAt;
+    const gained = AIC.computeSys.sync(state, summary);
+    if (gained > 0) {
+      UI.toast(I.t(first ? 'compute.firstSync' : 'compute.gained', { n: U.fmt(gained) }), 7000, 'gold');
+      A.play('goldenClaim');
+      UI.badge('compute', state);
+      S.save(state);
+    }
+    UI.update(state);
+  }
+
+  function connectDesktop() {
+    const desktop = window.aicDesktop;
+    if (!desktop) {
+      if (state.tab === 'compute') state.tab = 'shop'; // save vindo do desktop aberto na web
+      return;
+    }
+    document.getElementById('tab-compute').hidden = false;
+    desktop.getUsage().then(handleUsage, (err) => console.error('uso indisponível:', err));
+    desktop.onUsage(handleUsage);
+  }
+
+  // Tema exclusivo escolhido mas não liberado neste save (ex.: depois de resetar): volta ao padrão.
+  function enforceThemeLock() {
+    const theme = document.documentElement.dataset.theme;
+    if (!C.themeUnlocks[theme] || state.lineages[C.themeUnlocks[theme]]) return;
+    document.documentElement.dataset.theme = '';
+    try { localStorage.setItem('ai-token-clicker.theme', ''); } catch { /* storage indisponível */ }
+  }
+
+  function lineageCompleted(id) {
+    const msg = I.t('lineage.completed', { name: I.t(`lineage.${id}.name`), reward: I.t(`lineage.${id}.reward`) });
+    UI.toast(msg, 9000, 'gold');
+    UI.systemLine(msg);
+    if (id === 'gpt') UI.toast(I.t('lineage.unlockedNew'), 9000, 'gold');
+    UI.flash('singularity');
+    A.play('prestige');
+    UI.badge('agi', state);
+    checkAchievements();
+  }
+
   function bindEvents() {
     const el = UI.el();
 
@@ -129,15 +173,37 @@
     }
 
     el.modelBtn.addEventListener('click', () => {
-      if (!K.buyModel(state)) return;
-      const m = C.models[state.tier];
+      const r = K.buyModel(state);
+      if (!r) return;
+      const m = K.modelsOf(state)[state.tier];
       const msg = I.t('ui.modelUp', { name: m.name, mult: m.mult });
       UI.toast(msg);
       UI.systemLine(msg);
       UI.flash('evolve');
       A.play('model');
+      if (r.completed) lineageCompleted(r.completed);
       S.save(state);
       UI.update(state);
+    });
+
+    el.computeShop.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-cshop]');
+      const r = b && AIC.computeSys.buy(state, b.dataset.cshop);
+      if (!r) return;
+      A.play(r.item.type === 'boost' ? 'goldenClaim' : 'upgrade');
+      if (r.amount) UI.toast(I.t('compute.injected', { n: U.fmt(r.amount) }), 4000, 'gold');
+      UI.pulse(b);
+      S.save(state);
+      UI.update(state);
+    });
+
+    el.lineages.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-lineage]');
+      if (b && K.setNextLineage(state, b.dataset.lineage)) {
+        A.play('ui');
+        S.save(state);
+        UI.update(state);
+      }
     });
 
     el.perks.addEventListener('click', (e) => {
@@ -156,7 +222,7 @@
       const msg = I.t('agi.done', { n: U.fmt(gain) });
       UI.clearOutput();
       UI.systemLine(msg);
-      UI.systemLine(`${C.models[state.tier].name} online.`);
+      UI.systemLine(`${K.modelsOf(state)[state.tier].name} online.`);
       UI.toast(msg, 6000, 'gold');
       UI.flash('singularity');
       A.play('prestige');
@@ -166,6 +232,11 @@
     });
 
     el.theme.addEventListener('change', () => {
+      const need = C.themeUnlocks[el.theme.value];
+      if (need && !state.lineages[need]) {
+        el.theme.value = document.documentElement.dataset.theme || C.themes[0];
+        return;
+      }
       const theme = el.theme.value === C.themes[0] ? '' : el.theme.value;
       document.documentElement.dataset.theme = theme;
       try { localStorage.setItem('ai-token-clicker.theme', theme); } catch { /* storage indisponível */ }
@@ -203,6 +274,7 @@
       const lang = state.lang;
       state = K.newState();
       state.lang = lang;
+      enforceThemeLock();
       UI.clearOutput();
       UI.update(state);
     });
@@ -224,6 +296,7 @@
 
   function start() {
     state = S.load();
+    enforceThemeLock();
     I.lang = state.lang || I.detect();
     state.lang = I.lang;
 
@@ -232,19 +305,27 @@
     A.setStyle(document.documentElement.dataset.theme === 'win98' ? 'win98' : 'chip');
     syncAudioControls();
     bindEvents();
+    connectDesktop();
     applyOffline();
-    UI.systemLine(`${C.models[state.tier].name} online.`);
+    UI.systemLine(`${K.modelsOf(state)[state.tier].name} online.`);
     UI.update(state);
 
     // Usa o tempo real decorrido: abas em segundo plano têm o setInterval desacelerado.
     let last = performance.now();
+    let autoTyped = 0; // cliques automáticos acumulados para "digitar" no terminal (máx. 1 palavra por tick)
     setInterval(() => {
       const now = performance.now();
-      K.tick(state, Math.min((now - last) / 1000, K.offlineCapHours(state) * 3600));
+      const dt = Math.min((now - last) / 1000, K.offlineCapHours(state) * 3600);
+      K.tick(state, dt);
+      autoTyped = Math.min(autoTyped + K.compute(state).autoClicks * dt, 3);
+      if (autoTyped >= 1 && !document.hidden) {
+        autoTyped -= 1;
+        UI.typeToken(state.tier);
+      }
       last = now;
       A.setMood({
         tier: state.tier,
-        frenzy: state.buffs.some((b) => b.id === 'frenzy' || b.id === 'clickFrenzy'),
+        frenzy: state.buffs.some((b) => ['frenzy', 'clickFrenzy', 'session_boost'].includes(b.id)),
         hallucination: state.buffs.some((b) => b.id === 'hallucination'),
       });
       if (state.goldenIn <= 0) {

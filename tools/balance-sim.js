@@ -1,5 +1,7 @@
 // Simula um jogador "ótimo" para medir o tempo até cada modelo.
-// Uso: node tools/balance-sim.js [cliques_por_segundo] [runs]   (padrão: 4 cliques/s, 2 runs)
+// Uso: node tools/balance-sim.js [cliques_por_segundo] [runs | linhagens]
+//   node tools/balance-sim.js 4 3                        → 3 runs de GPT
+//   node tools/balance-sim.js 4 gpt,gpt,gpt,claude,gemini → uma run por linhagem da lista (a 1ª é sempre GPT)
 //
 // A cada segundo o bot clica, recebe a produção passiva e compra a opção com o melhor
 // "tempo de retorno + tempo de espera". Ao chegar no último modelo, faz a singularidade e compra
@@ -11,7 +13,9 @@ require(path.join(__dirname, '../js/core.js'));
 const { core: K, config: C } = globalThis.AIC;
 
 const CPS = Number(process.argv[2]) || 4;
-const RUNS = Number(process.argv[3]) || 2;
+const arg = process.argv[3] || '2';
+const PLAN = /^\d+$/.test(arg) ? Array(Number(arg)).fill('gpt') : arg.split(',');
+const RUNS = PLAN.length;
 const MAX_SECONDS = 20 * 3600;
 const s = K.newState();
 
@@ -46,9 +50,9 @@ function bestOption() {
 }
 
 for (let run = 1; run <= RUNS; run++) {
-  console.log(`== run ${run} (AGI ${s.agi.points}, perks: ${Object.keys(s.agi.perks).join(', ') || '-'})`);
+  console.log(`== run ${run} [${s.lineage}] (AGI ${s.agi.points}, perks: ${Object.entries(s.agi.perks).map(([k, v]) => (v === true ? k : `${k}:${v}`)).join(', ') || '-'})`);
   let t = 0;
-  while (s.tier < C.models.length - 1 && t < MAX_SECONDS) {
+  while (s.tier < K.modelsOf(s).length - 1 && t < MAX_SECONDS) {
     K.tick(s, 1);
     for (let i = 0; i < CPS; i++) K.click(s);
     K.checkAchievements(s);
@@ -59,14 +63,20 @@ for (let run = 1; run <= RUNS; run++) {
       apply(s, o);
       if (o.kind === 'model') {
         const d = K.compute(s);
-        console.log(`${(t / 60).toFixed(1).padStart(6)} min  ${C.models[s.tier].name.padEnd(10)} tps=${d.tps.toExponential(2)}  clique=${d.perClick.toExponential(2)}`);
+        console.log(`${(t / 60).toFixed(1).padStart(6)} min  ${K.modelsOf(s)[s.tier].name.padEnd(18)} tps=${d.tps.toExponential(2)}  clique=${d.perClick.toExponential(2)}`);
       }
     }
   }
   console.log(`  unidades: ${JSON.stringify(s.gens)}`);
   console.log(`total: ${(t / 3600).toFixed(2)} h · conquistas ${Object.keys(s.achievements).length} · singularidade daria ${K.prestigeGain(s)} pts`);
   if (run < RUNS) {
+    if (!K.setNextLineage(s, PLAN[run])) console.log(`  (linhagem ${PLAN[run]} ainda bloqueada)`);
     K.prestige(s);
-    for (const p of [...C.perks].sort((a, b) => a.cost - b.cost)) K.buyPerk(s, p.id);
+    // Compra a perk mais barata disponível até acabar os pontos (perks com nível podem repetir).
+    for (;;) {
+      const p = C.perks.filter((x) => K.perkBuyable(s, x)).sort((x, y) => K.perkCost(s, x) - K.perkCost(s, y))[0];
+      if (!p) break;
+      K.buyPerk(s, p.id);
+    }
   }
 }

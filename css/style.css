@@ -229,6 +229,7 @@ select.chip option { background: var(--panel); color: var(--fg); }
 .item-owned { color: var(--accent2); font-weight: 800; }
 .item-cmd { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .item-desc { margin-top: 4px; font-size: 12px; color: var(--muted); }
+.item-effect { margin-top: 4px; font-size: 12px; color: var(--accent); }
 .item-meta { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; font-size: 12px; }
 .item-cost { color: var(--accent2); }
 .item-rate { color: var(--accent-dim); }
@@ -363,6 +364,8 @@ body.evolve { animation: evolve 1.2s ease-out; }
   color: var(--accent2);
   letter-spacing: 0.05em;
 }
+.buff.mech { border-color: var(--accent); color: var(--accent); }
+.item[disabled] { cursor: not-allowed; }
 .buff.bad { border-color: var(--red); color: var(--red); }
 
 /* ---- AGI ---- */
@@ -375,6 +378,14 @@ body.evolve { animation: evolve 1.2s ease-out; }
 .item.owned .item-owned { color: var(--accent); font-weight: 600; font-size: 12px; }
 
 /* ---- conquistas ---- */
+.compute-balance { color: var(--accent2); font-weight: 800; font-size: 16px; }
+.compute-days { display: grid; gap: 4px; font-size: 12px; }
+.cday { display: grid; grid-template-columns: 48px 1fr 64px 48px; gap: 8px; align-items: center; color: var(--muted); }
+.cday.today { color: var(--fg); }
+.cday .bar { margin: 0; height: 6px; }
+.cday b { color: var(--accent2); text-align: right; font-weight: 600; }
+.cday .w { text-align: right; }
+
 .ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
 .ach {
   padding: 8px 10px;

@@ -13,6 +13,15 @@
     }
   }
 
+  // Perks que viraram níveis: o valor antigo (true) vira o nível equivalente ao bônus que dava.
+  function migratePerks(perks = {}) {
+    const out = { ...perks };
+    if (out.efficient === true) out.efficient = 2; // era −10%, agora −5% por nível
+    if (out.golden_luck === true) out.golden_luck = 3; // era −30%, agora −10% por nível
+    if (out.autoclick === true) out.autoclick = 1;
+    return out;
+  }
+
   function load() {
     const fresh = AIC.core.newState();
     try {
@@ -27,7 +36,15 @@
         upgrades: { ...data.upgrades },
         achievements: { ...data.achievements },
         buffs: Array.isArray(data.buffs) ? data.buffs : [],
-        agi: { ...fresh.agi, ...data.agi, perks: { ...data.agi?.perks } },
+        // Quem já tinha chegado ao GPT-6 Sol antes das linhagens existirem já concluiu o GPT.
+        lineages: { ...(data.achievements?.model_gpt6sol ? { gpt: true } : {}), ...data.lineages },
+        agi: { ...fresh.agi, ...data.agi, perks: migratePerks(data.agi?.perks) },
+        compute: {
+          ...fresh.compute,
+          ...data.compute,
+          earned: { ...data.compute?.earned },
+          levels: { ...data.compute?.levels },
+        },
       };
     } catch {
       return fresh;

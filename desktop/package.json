@@ -1,0 +1,14 @@
+{
+  "name": "ai-token-clicker-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI Token Clicker para desktop: seus tokens reais do Claude Code viram compute no jogo",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/"
+  },
+  "devDependencies": {
+    "electron": "^44.5.1"
+  }
+}
